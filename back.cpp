@@ -114,7 +114,21 @@ int dfs(int line_id, int col_id, int line, int col, int n)
     if (line_id < 0 || line_id >= line || col_id < 0 || col_id >= col)
         return 1;
     if (a[line_id][col_id] == 0)
-        return 1;
+        {col_id++;
+        if(col_id==col){
+            col_id=0;
+            line_id++;
+        }
+        if(dfs(line_id, col_id, line, col, 0)==-1){
+            col_id--;
+            if(col_id==-1){
+                col_id=col-1;
+                line_id--;
+            }
+            return -1;
+        }
+       return 1;//
+        }
     int rt = 0; // 目前最大的问题是，如果dfs返回的是1，那就固定了不调整了，哪怕不先从右边查找就可能可以成功,甚至右边固定，下方不固定的模式也要搜索一遍。
     if (a[line_id][col_id] != 0 && (n == 0 || n == 5) &&connection[line_id][col_id][3]==0&& (j = findright(line_id, col_id+1, col)) != -1)
     {//cout<<"run"<<line_id<<endl;
@@ -260,8 +274,24 @@ int dfs(int line_id, int col_id, int line, int col, int n)
     //         rt=dfs(findleft(line_id,col_id),col_id,line,col,0);
     //     }
     // }
+    else{
+        col_id++;
+        if(col_id==col){
+            col_id=0;
+            line_id++;
+        }
+       if(dfs(line_id, col_id, line, col, 0)==-1){
+            col_id--;
+            if(col_id==-1){
+                col_id=col-1;
+                line_id--;
+            }
+            return -1;
+        }
+       return 1;
 
-    return 1;
+    }
+
 }
 int main()
 {
@@ -275,8 +305,13 @@ int main()
         }
     }
     int line_id = 0, col_id = 0;
-    while (line_id < line && col_id < col)
-    {
+    while(line_id < line && col_id < col && a[line_id][col_id] == 0) {
+        col_id++;
+        if(col_id == col) {
+            col_id = 0;
+            line_id++;
+        }
+    }
         if (a[line_id][col_id] != 0)
 
         {
@@ -296,28 +331,27 @@ int main()
                         rt = dfs(line_id, col_id, line, col, 3);
                         if (rt == -1)
                         {
-                            cout << "NO" << endl;
+                            std::cout << "No Solution" << endl;
                             return 0;
                         }
                     }
                 }
             }}
-        }
-        col_id++;
-        if(col_id==col){
-            col_id=0;
-            line_id++;
-        }
+        
         
     }
-    cout << "col_idES" << endl;
+    int flag=0;
+    //std::cout << "col_idES" << endl;
     for (int i = 0; i < line; i++)
     {
         for (int j = 0; j < col; j++)
         {
             if(connection[i][j][0]||connection[i][j][1]||connection[i][j][2]||connection[i][j][3]==1)
-            cout << i<<" "<<j<<" "<<connection[i][j][0] << " " << connection[i][j][1] << " " << connection[i][j][2] << " " << connection[i][j][3] << endl;
+            {std::cout << i+1<<" "<<j+1<<" "<<connection[i][j][0] << " " << connection[i][j][1] << " " << connection[i][j][2] << " " << connection[i][j][3] << endl;
+        flag=1;}
         }
     }
+    if(flag==0)
+    std::cout<<"NO Solution"<<endl;
     return 0;
 }
