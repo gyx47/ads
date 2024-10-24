@@ -10,256 +10,254 @@ int a[10][10] = {0};
 //     vector<int> neighber = vector<int>(4,0);
 // };
 int connection[10][10][4];
-int findright(int x, int y, int col)
+int findright(int line_id, int col_id, int col)
 {
-    while (y < col)
+    while (col_id < col)
     {
-        if (a[x][y] != 0)
-            return y;
-        y++;
+        if (a[line_id][col_id] != 0)
+            return col_id;
+        col_id++;
     }
     return -1;
 }
-int finddown(int x, int y, int line)
+int finddown(int line_id, int col_id, int line)
 {
-    while (x < line)
+    while (line_id < line)
     {
-        if (a[x][y] != 0)
-            return x;
-        x++;
+        if (a[line_id][col_id] != 0)
+            return line_id;
+        line_id++;
     }
     return -1;
 }
-int findleft(int x, int y)
+int findleft(int line_id, int col_id)
 {
-    while (y >= 0)
+    while (col_id >= 0)
     {
-        if (a[x][y] != 0)
-            return y;
-        y--;
+        if (a[line_id][col_id] != 0)
+            return col_id;
+        col_id--;
     }
     return -1;
 }
-int findup(int x, int y)
+int findup(int line_id, int col_id)
 {
-    while (x >= 0)
+    while (line_id >= 0)
     {
-        if (a[x][y] != 0)
-            return x;
-        x--;
+        if (a[line_id][col_id] != 0)
+            return line_id;
+        line_id--;
     }
     return -1;
 }
-void connect(int x, int y, int i, int j, int connection[][10][4])
+void connect(int line_id, int col_id, int i, int j, int connection[][10][4])
 {
-    if (x == i)
+    if (line_id == i)
     {
-        if (y < j)
+        if (col_id < j)
         {
-            connection[x][y][1] = 1;
-            connection[i][j][0] = 1;
-        }
-        else
-        {
-            connection[x][y][0] = 1;
-            connection[i][j][1] = 1;
-        }
-    }
-    else
-    {
-        if (x < i)
-        {
-            connection[x][y][3] = 1;
+            connection[line_id][col_id][3] = 1;
             connection[i][j][2] = 1;
         }
         else
         {
-            connection[x][y][2] = 1;
+            connection[line_id][col_id][2] = 1;
             connection[i][j][3] = 1;
-        }
-    }
-}
-void disconnect(int x, int y, int i, int j, int connection[][10][4])
-{
-    if (x == i)
-    {
-        if (y < j)
-        {
-            connection[x][y][0] = 0;
-            connection[i][j][1] = 0;
-        }
-        else
-        {
-            connection[x][y][1] = 0;
-            connection[i][j][0] = 0;
         }
     }
     else
     {
-        if (x < i)
+        if (line_id < i)
         {
-            connection[x][y][3] = 0;
+            connection[line_id][col_id][1] = 1;
+            connection[i][j][0] = 1;
+        }
+        else
+        {
+            connection[line_id][col_id][0] = 1;
+            connection[i][j][1] = 1;
+        }
+    }
+}
+void disconnect(int line_id, int col_id, int i, int j, int connection[][10][4])
+{
+    if (line_id == i)
+    {
+        if (col_id < j)
+        {
+            connection[line_id][col_id][3] = 0;
             connection[i][j][2] = 0;
         }
         else
         {
-            connection[x][y][2] = 0;
+            connection[line_id][col_id][2] = 0;
             connection[i][j][3] = 0;
         }
     }
+    else
+    {
+        if (line_id < i)
+        {
+            connection[line_id][col_id][1] = 0;
+            connection[i][j][0] = 0;
+        }
+        else
+        {
+            connection[line_id][col_id][0] = 0;
+            connection[i][j][1] = 0;
+        }
+    }
 }
-int dfs(int x, int y, int line, int col, int n)
+int dfs(int line_id, int col_id, int line, int col, int n)
 {
-    int i, j;
-    if (x < 0 || x >= line || y < 0 || y >= col)
+    int i=0, j=0;
+    if (line_id < 0 || line_id >= line || col_id < 0 || col_id >= col)
         return 1;
-    if (a[x][y] == 0)
+    if (a[line_id][col_id] == 0)
         return 1;
     int rt = 0; // 目前最大的问题是，如果dfs返回的是1，那就固定了不调整了，哪怕不先从右边查找就可能可以成功,甚至右边固定，下方不固定的模式也要搜索一遍。
-    if (a[x][y] != 0 && (n == 0 || n == 5) && (i = findright(x, y+1, col)) != -1)
-    {cout<<"run"<<x<<endl;
-        connect(x, y, i, y, connection);
-        n++;
-        if (n == 6)
-            n = 2;
-        a[x][y]--;
-        a[i][y]--;
-        rt = dfs(i, y, line, col, 0);
+    if (a[line_id][col_id] != 0 && (n == 0 || n == 5) &&connection[line_id][col_id][3]==0&& (j = findright(line_id, col_id+1, col)) != -1)
+    {//cout<<"run"<<line_id<<endl;
+        connect(line_id, col_id, line_id, j, connection);
+       
+        if (n == 5)
+            n = 1;
+        a[line_id][col_id]--;
+        a[line_id][j]--;
+        rt = dfs(line_id, j, line, col, 0);
         if (rt == -1)
         {//
-            rt = dfs(i, y, line, col, 1);
-            if (rt == -1)
-            {
-                rt = dfs(x, j, line, col, 5);
+            
+                rt = dfs(line_id, j, line, col, 5);
                 if (rt == -1)
                 {
-                    rt = dfs(x, j, line, col, 1);
+                    rt = dfs(line_id, j, line, col, 1);
                     if (rt == -1)
                     {
-                        rt = dfs(x, j, line, col, 2);
+                        rt = dfs(line_id, j, line, col, 2);
                         if (rt == -1)
                         {
-                            rt = dfs(x, j, line, col, 3);
+                            rt = dfs(line_id, j, line, col, 3);
                             if (rt == -1)
                             {
-                                a[x][y]++;
-                                a[x][j]++;
-                                disconnect(x, y, x, j, connection);
+                                a[line_id][col_id]++;
+                                a[line_id][j]++;
+                                disconnect(line_id, col_id, line_id, j, connection);
                             }
                         }
                     }
-                }
+                
             }
         }
         else
         {
         }
-        // a[x][y]++;
+        // a[line_id][col_id]++;
     }
+ n++;
+    if (a[line_id][col_id] != 0 && n == 1 &&connection[line_id][col_id][1]==0&& (i = finddown(line_id+1, col_id, line)) != -1)
+    {
+        connect(line_id, col_id, i, col_id, connection);
+        
+        a[line_id][col_id]--;
+        a[i][col_id]--;
+        // rt=dfs(line_id,j,line,col,0);
 
-    if (a[x][y] != 0 && n == 1 && (j = finddown(x+1, y, line)) != -1)
-    {
-        connect(x, y, x, j, connection);
-        n++;
-        a[x][y]--;
-        a[x][j]--;
-        // rt=dfs(x,j,line,col,0);
-
-        rt = dfs(x, j, line, col, 0);
+        rt = dfs(i, col_id, line, col, 0);
         if (rt == -1)
         {
-            rt = dfs(x, j, line, col, 5);
+            rt = dfs(i, col_id, line, col, 5);
             if (rt == -1)
             {
-                rt = dfs(x, j, line, col, 1);
+                rt = dfs(i, col_id, line, col, 1);
                 if (rt == -1)
                 {
-                    rt = dfs(x, j, line, col, 2);
+                    rt = dfs(i, col_id, line, col, 2);
                     if (rt == -1)
                     {
-                        rt = dfs(x, j, line, col, 3);
+                        rt = dfs(i, col_id, line, col, 3);
                         if (rt == -1)
                         {
-                            a[x][y]++;
-                            a[x][j]++;
-                            disconnect(x, y, x, j, connection);
+                            a[line_id][col_id]++;
+                            a[i][col_id]++;
+                            disconnect(line_id, col_id, i, col_id, connection);
                         }
                     }
                 }
             }
         }
-        // a[x][y]++;
-    }
-    if (a[x][y] != 0 && n == 2 && (i = findleft(x, y-1)) != -1)
+        // a[line_id][col_id]++;
+    }n++;
+    if (a[line_id][col_id] != 0 && n == 2 &&connection[line_id][col_id][2]==0&& (j = findleft(line_id, col_id-1)) != -1)
     {
-        connect(x, y, i, y, connection);
-        n++;
-        a[x][y]--;
-        a[i][y]--;
-        //  rt=dfs(i,y,line,col,0);
-        rt = dfs(i, y, line, col, 0);
+        connect(line_id, col_id, line_id, j, connection);
+       
+        a[line_id][col_id]--;
+        a[line_id][j]--;
+        //  rt=dfs(i,col_id,line,col,0);
+        rt = dfs(line_id, j, line, col, 0);
         if (rt == -1)
         {
-            rt = dfs(x, j, line, col, 5);
+            rt = dfs(line_id, j, line, col, 5);
             if (rt == -1)
             {
-                rt = dfs(x, j, line, col, 1);
+                rt = dfs(line_id, j, line, col, 1);
                 if (rt == -1)
                 {
-                    rt = dfs(x, j, line, col, 2);
+                    rt = dfs(line_id, j, line, col, 2);
                     if (rt == -1)
                     {
-                        rt = dfs(x, j, line, col, 3);
+                        rt = dfs(line_id, j, line, col, 3);
                         if (rt == -1)
                         {
-                            a[x][y]++;
-                            a[x][j]++;
-                            disconnect(x, y, x, j, connection);
+                            a[line_id][col_id]++;
+                            a[line_id][j]++;
+                            disconnect(line_id, col_id, line_id, j, connection);
                         }
                     }
                 }
             }
         }
-        //  a[x][y]++;
-    }
-    if (a[x][y] != 0 && n == 3 && (j = findup(x-1, y)) != -1)
+        //  a[line_id][col_id]++;
+    } n++;
+    if (a[line_id][col_id] != 0 && n == 3 && connection[line_id][col_id][0]==0&&(i = findup(line_id-1, col_id)) != -1)
     {
-        connect(x, y, x, j, connection);
-        a[x][y]--;
-        a[x][j]--;
-        rt = dfs(x, j, line, col, 0);
-        //  rt=dfs(i,y,line,col,0);
+        connect(line_id, col_id, i, col_id, connection);
+        a[line_id][col_id]--;
+        a[i][col_id]--;
+        rt = dfs(i, col_id, line, col, 0);
+        //  rt=dfs(i,col_id,line,col,0);
         if (rt == -1)
         {
-            rt = dfs(x, j, line, col, 5);
+            rt = dfs(i, col_id, line, col, 5);
             if (rt == -1)
             {
-                rt = dfs(x, j, line, col, 1);
+                rt = dfs(i, col_id, line, col, 1);
                 if (rt == -1)
                 {
-                    rt = dfs(x, j, line, col, 2);
+                    rt = dfs(i, col_id, line, col, 2);
                     if (rt == -1)
                     {
-                        rt = dfs(x, j, line, col, 3);
+                        rt = dfs(i, col_id, line, col, 3);
                         if (rt == -1)
                         {
-                            a[x][y]++;
-                            a[x][j]++;
-                            disconnect(x, y, x, j, connection);
+                            a[line_id][col_id]++;
+                            a[i][col_id]++;
+                            disconnect(line_id, col_id, i, col_id, connection);
                         }
                     }
                 }
             }
         }
-        //  a[x][y]++;
+        //  a[line_id][col_id]++;
     }
-    if (a[x][y] != 0)
+    if (a[line_id][col_id] != 0)
         return -1;
-    //     if (connection[x][y][1]==1) {
-    //         j=finddown(x,y,line);
-    //         disconnect(x,y,x,j,connection);
-    //         a[x][j]++;
-    //         rt=dfs(findleft(x,y),y,line,col,0);
+    //     if (connection[line_id][col_id][1]==1) {
+    //         j=finddown(line_id,col_id,line);
+    //         disconnect(line_id,col_id,line_id,j,connection);
+    //         a[line_id][j]++;
+    //         rt=dfs(findleft(line_id,col_id),col_id,line,col,0);
     //     }
     // }
 
@@ -276,26 +274,26 @@ int main()
             cin >> a[i][j];
         }
     }
-    int x = 0, y = 0;
-    while (x < line && y < col)
+    int line_id = 0, col_id = 0;
+    while (line_id < line && col_id < col)
     {
-        if (a[x][y] != 0)
+        if (a[line_id][col_id] != 0)
 
         {
             int rt = 0;
-            rt = dfs(x, y, line, col, 0);
+            rt = dfs(line_id, col_id, line, col, 0);
             if (rt == -1)
             {
-                 rt = dfs(x, y, line, col, 5);
+                 rt = dfs(line_id, col_id, line, col, 5);
             if (rt == -1)
             {
-                rt = dfs(x, y, line, col, 1);
+                rt = dfs(line_id, col_id, line, col, 1);
                 if (rt == -1)
                 {
-                    rt = dfs(x, y, line, col, 2);
+                    rt = dfs(line_id, col_id, line, col, 2);
                     if (rt == -1)
                     {
-                        rt = dfs(x, y, line, col, 3);
+                        rt = dfs(line_id, col_id, line, col, 3);
                         if (rt == -1)
                         {
                             cout << "NO" << endl;
@@ -305,14 +303,14 @@ int main()
                 }
             }}
         }
-        y++;
-        if(y==col){
-            y=0;
-            x++;
+        col_id++;
+        if(col_id==col){
+            col_id=0;
+            line_id++;
         }
         
     }
-    cout << "YES" << endl;
+    cout << "col_idES" << endl;
     for (int i = 0; i < line; i++)
     {
         for (int j = 0; j < col; j++)
